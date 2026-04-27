@@ -1,0 +1,72 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
+
+const AuthContext = createContext();
+
+export const useAuth = () => useContext(AuthContext);
+
+export const AuthProvider = ({ children }) => {
+    const [user, setUser] = useState(null);
+    const [ndaSigned, setNdaSigned] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    const api = axios.create({
+        baseURL: 'http://localhost:5000/api',
+    });
+
+    // Add token to requests
+    api.interceptors.request.use((config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    });
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+            checkNDASigned();
+        }
+        setLoading(false);
+    }, []);
+
+    const login = async (email, password) => {
+        const { data: response } = await api.post('/v1/auth/login', { email, password });
+        const { token, user: userData } = response.data;
+        
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(userData));
+        setUser(userData);
+        await checkNDASigned();
+    };
+
+    const logout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+        setNdaSigned(false);
+    };
+
+    const checkNDASigned = async () => {
+        try {
+            const { data: response } = await api.get('/v1/nda/status');
+            setNdaSigned(response.data.signed);
+        } catch (error) {
+            console.error('Error checking NDA status:', error);
+        }
+    };
+
+    const signNDA = async (fullName) => {
+        const { data: response } = await api.post('/v1/nda/accept', { fullName, accepted: true });
+        setNdaSigned(true);
+        return response.data;
+    };
+
+    return (
+        <AuthContext.Provider value={{ user, ndaSigned, login, logout, signNDA, api, loading }}>
+            {children}
+        </AuthContext.Provider>
+    );
+};

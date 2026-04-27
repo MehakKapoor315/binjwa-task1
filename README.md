@@ -1,5 +1,17 @@
 # LandVista - Commercial Real Estate Platform
+work flow::::::::------
+Onboarding: A user submits a request (accessrequests).
+Review: Admin approves it, creating a profile in users and logging it in auditlogs.
+Compliance: Before seeing data, the user must sign the latest version in ndaversions. This creates a permanent, legally-binding record in ndarecords.
+Access: Once signed, the user can pull intelligence from sensitivedatas, filtered by their assigned role.
 
+DATABASE:::::------
+users: Stores all authenticated personnel profiles.
+accessrequests: Acts as an onboarding waiting room for new applicants.
+ndaversions: Keeps different versions of the legal NDA text.
+ndarecords: Maintains the audit trail of all digital signatures.
+auditlogs: Stores global security logs for tracking and governance.
+sensitivedatas: Works as an “intelligence vault” for restricted and confidential data.
 ## 📖 Overview
 LandVista is a secure, full-stack web application tailored for commercial real estate management and governance. It serves as a centralized platform for managing properties, zones, and sensitive intelligence data while enforcing strict role-based access control (RBAC) and compliance through built-in Non-Disclosure Agreements (NDAs).
 
